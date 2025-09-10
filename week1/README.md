@@ -1,8 +1,7 @@
 # Week 1 notes
+## Reading Response
 
 ---
-
-write a few sentences as to why the quote stuck out to you, whether you agree or disagree, and how the quote relates to learning programming skills.
 
 
 > "For instance, the unease pondering what it might mean to have some of our thinking done out of body by an external device is arguably just a computer-era version of the challenges to self-image o “proprioception” posed by industrial machinery. The industrial age challenged us to rethink the limits of the human body: Where does my body end and the tool begin? The digital age challenges us to rethink the limits of the human mind: What are the boundaries of my cognition?" - *Douglas Rushkoff, p16*.
