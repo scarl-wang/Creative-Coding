@@ -1,10 +1,10 @@
 let myDiameter; //setting the diameter of the biggest circle
-let gap = 100; //setting the gap between the circles
+let gap; //setting the gap between the circles
 
 function setup() {
   createCanvas(windowWidth, windowHeight); //set canvas to window size
   background("blue"); //make background blue
-  
+  noLoop(); //so it only loads once
 }
 
 function draw() {
@@ -17,6 +17,9 @@ function draw() {
   myDiameter = windowWidth*1.5;
   circle(windowWidth/2, windowHeight/2, myDiameter);
   //drawing a circle 1.5 times as big as the screen
+
+  gap = windowWidth/6;
+  // setting the gap to 1/6 of the window size
 
   //repeating the circle and making it smaller each time
   myDiameter = myDiameter - gap; // assign a new value to myDiameter
@@ -47,7 +50,7 @@ function draw() {
   strokeWeight(5);
   stroke("black");
   fill("yellow");
-  circle(windowWidth/2, windowHeight/2, myDiameter); //centered circle with the newest diameter
+  circle(windowWidth/2, windowHeight/2, 120); //centered circle with the newest diameter
 
   //2 ellipses for eyes
   fill("black");
