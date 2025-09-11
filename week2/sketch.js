@@ -1,22 +1,64 @@
-
+let myDiameter; //setting the diameter of the biggest circle
+let gap = 100; //setting the gap between the circles
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  background("black");
+  createCanvas(windowWidth, windowHeight); //set canvas to window size
+  background("blue"); //make background blue
   
 }
 
 function draw() {
 
-  noStroke();
+  strokeWeight(4);
+  stroke("red");
+  noFill();
+  //setting the style of the circles
 
-  fill("white");
-  rect(100,100,100,100);
+  myDiameter = windowWidth*1.5;
+  circle(windowWidth/2, windowHeight/2, myDiameter);
+  //drawing a circle 1.5 times as big as the screen
 
-  fill("red");
-  circle(windowWidth/2,windowHeight/2,windowHeight/2);
+  //repeating the circle and making it smaller each time
+  myDiameter = myDiameter - gap; // assign a new value to myDiameter
+  circle(windowWidth/2, windowHeight/2, myDiameter);
 
+  myDiameter = myDiameter - gap; // assign a new value to myDiameter
+  circle(windowWidth/2, windowHeight/2, myDiameter);
+
+  myDiameter = myDiameter - gap; // assign a new value to myDiameter
+  circle(windowWidth/2, windowHeight/2, myDiameter);
+
+  myDiameter = myDiameter - gap; // assign a new value to myDiameter
+  circle(windowWidth/2, windowHeight/2, myDiameter);
+
+  myDiameter = myDiameter - gap; // assign a new value to myDiameter
+  circle(windowWidth/2, windowHeight/2, myDiameter);
+
+  myDiameter = myDiameter - gap; // assign a new value to myDiameter
+  circle(windowWidth/2, windowHeight/2, myDiameter);
+
+  myDiameter = myDiameter - gap; // assign a new value to myDiameter
+  circle(windowWidth/2, windowHeight/2, myDiameter);
+
+  myDiameter = myDiameter - gap; // assign a new value to myDiameter
+  circle(windowWidth/2, windowHeight/2, myDiameter);
+
+  //making a smiley face with a yellow circle with black outline
+  strokeWeight(5);
+  stroke("black");
   fill("yellow");
-  triangle(200,200,windowWidth/2,windowHeight/2,500,500);
+  circle(windowWidth/2, windowHeight/2, myDiameter); //centered circle with the newest diameter
+
+  //2 ellipses for eyes
+  fill("black");
+  ellipse(windowWidth/2-15, windowHeight/2-20, 8, 30); //left eye
+  ellipse(windowWidth/2+15, windowHeight/2-20, 8, 30); //right eye
+
+  //arc for mouth
+  noFill();
+  arc(windowWidth/2, windowHeight/2, 80, 75, 0, PI);
+
+
+
 
 }
