@@ -1,29 +1,32 @@
-let baseSize = 10; //variable for base size
+//making a variable for base size
+//so i can adjust the scale easily
+let baseSize = 10;
 
-//make variables that represent colors
+//making a color palette with variables representing each color
 let color1 = "rgb(255, 255, 128)"; //yellow (lightest)
-let color2 = "rgb(255, 170, 128)"; //orange
+let color2 = "rgba(255, 173, 80, 1)"; //orange
 let color3 = "rgb(255, 85, 128)"; //pink
 let color4 = "rgba(132, 0, 40, 1)"; //deep red
 let color5 = "rgba(2, 0, 144, 0.4)"; //this one has transparency
 
 function setup() {
+  //creating a canvas
   createCanvas(windowWidth, windowHeight);
 }
 
 function draw() {
-  // set background to a
+  // set background to a light grey
   background("rgba(227, 227, 227, 1)");
 
   // create shorthand for canvas width & height
+  // this has to be after canvas is created
   let w = width;
   let h = height;
 
   // draw the large circle on the top left
-  // larger transparent layer
-  fill(color5);
+  fill("rgba(255, 255, 128, .5)"); //custon rgba for transparency
   noStroke();
-  circle(w * 0.3, h * 0.2, baseSize * 25);
+  circle(w * 0.3, h * 0.2, baseSize * 27);
   // solid color in the middle
   fill(color4);
   stroke(color2);
@@ -32,16 +35,17 @@ function draw() {
 
   // draw the smaller circle next to it
   fill(color5);
-  stroke("black");
+  stroke(color2);
   strokeWeight(5);
-  circle(w * 0.55, h * 0.3, 5 * baseSize);
+  circle(w * 0.55, h * 0.3, baseSize * 5);
 
-  // half circle on top
+  // draw the half circle top right
   strokeWeight(1);
+  stroke("black");
   fill(color1);
   arc(w * 0.78, h * 0.2, baseSize * 9, baseSize * 9, PI, 0);
 
-  // rectangle in the middle
+  // draw the rectangle under the circle (top right)
   // making a polygon so i can line it up with the arc
   fill(color4);
   beginShape();
@@ -53,7 +57,7 @@ function draw() {
   vertex(w * 0.65, h * 0.2 + baseSize * 0.8);
   endShape(CLOSE);
 
-  // square at the top of the triangle
+  // draw square at the top of the triangle
   noStroke();
   fill(color1);
   beginShape();
@@ -83,17 +87,18 @@ function draw() {
   rect(w * 0.77, h * 0.24, baseSize * 9, baseSize * 0.3);
 
   // horizontal line 2 (on top of triangle)
-  // no stroke, red
+  // no stroke, orange
   noStroke();
-  fill(color4);
+  fill(color2);
   rect(w * 0.68, h * 0.39, baseSize * 10.5, baseSize * 0.3);
 
   // vertical line (bottom right)
   stroke("black");
+  fill(color4);
   rect(w * 0.9, h * 0.6, baseSize * 0.8, baseSize * 20);
 
   // horizontal line 3 (bottom right)
-  fill("rgba(255, 0, 0, 0.5)"); //custom color here for transparency
+  fill("rgba(255, 173, 80, .7)"); //custom color here for transparency
   rect(w * 0.73, h * 0.67, baseSize * 11.7, baseSize * 0.8);
 
   // horizontal line 4 (bottom right)
@@ -102,9 +107,9 @@ function draw() {
   rect(w * 0.79, h * 0.71, baseSize * 8, baseSize / 5);
 
   // tiny dot (bottom right)
-  fill("black");
+  fill(color3);
   strokeWeight(2);
-  stroke(color4);
+  stroke(color2);
   circle(w * 0.87, h * 0.82, baseSize * 1.2);
 
   // curved arcs, top to bottom
@@ -136,36 +141,24 @@ function draw() {
   vertex(w * 0.5, h * 0.55); //left peak
   endShape(CLOSE);
 
-  // half-moon on the bottom left
+  // make half-moon on the bottom left
+  // using quadratic vertex
   stroke("black");
   strokeWeight(1);
-  //bottom arc
-  fill(color2);
-  arc(
-    w * 0.55,
-    h * 0.55,
-    baseSize * 35,
-    baseSize * 35,
-    PI * 0.48,
-    PI * 1.2,
-    OPEN
-  );
-  //top arc
-  noFill();
-  arc(
-    w * 0.605,
-    h * 0.525,
-    baseSize * 38,
-    baseSize * 39,
-    PI * 0.542,
-    PI * 1.14,
-    OPEN
-  );
+  fill(color4);
+  beginShape();
+  //starting vertex
+  vertex(w * 0.23, h * 0.4);
+  //adding the curves
+  quadraticVertex(w * 0.05, h * 0.7, w * 0.53, h * 0.8);
+  quadraticVertex(w * 0.18, h * 0.7, w * 0.23, h * 0.4); //last coordinates are the same as the first
+  endShape();
 
-  // black 'c' shape
-  fill(color5); //transparent black fill
+  // drawing the black 'c' shape
+  fill(color5);
   stroke("black");
   strokeWeight(1);
+  // using a polygon
   beginShape();
   vertex(w * 0.4, h * 0.6); //top left
   vertex(w * 0.52, h * 0.65); //top right 1
@@ -188,21 +181,30 @@ function draw() {
   vertex(w * 0.345, h * 0.65); //bottom right = bottom left
   endShape(CLOSE);
 
-  // half moon shapes on the right
+  // drawing the horn shapes on the right
+  // using quadratic vertex
   stroke("black");
   strokeWeight(1);
-  //shape 1 bottom arc
   fill(color5);
-  arc(w * 0.6, h * 0.62, baseSize * 10, baseSize * 10, PI * 2, PI * 0.6, OPEN);
-  //shape 1 top arc
-  noFill();
-  arc(w * 0.6, h * 0.62, baseSize * 10, baseSize * 7.5, PI * 2, PI * 0.6);
-  //shape 2 bottom arc
-  fill(color5);
-  arc(w * 0.6, h * 0.68, baseSize * 10, baseSize * 10, PI * 2, PI * 0.6, OPEN);
-  //shape 2 top arc
-  noFill();
-  arc(w * 0.6, h * 0.68, baseSize * 10, baseSize * 6, PI * 2, PI * 0.6, OPEN);
+  //shape 1
+  beginShape();
+  //arc 1
+  vertex(w * 0.575, h * 0.67);
+  quadraticVertex(w * 0.68, h * 0.67, w * 0.7, h * 0.62);
+  //arc 2
+  vertex(w * 0.7, h * 0.62); //this is the tip of the horn
+  quadraticVertex(w * 0.69, h * 0.69, w * 0.57, h * 0.69);
+  endShape();
+
+  //horn shape 2
+  beginShape();
+  //arc 1
+  vertex(w * 0.56, h * 0.72);
+  quadraticVertex(w * 0.66, h * 0.72, w * 0.69, h * 0.68);
+  //arc 2
+  vertex(w * 0.69, h * 0.68); //this is the tip of the horn
+  quadraticVertex(w * 0.67, h * 0.75, w * 0.55, h * 0.75);
+  endShape();
 
   // bottom line
   strokeWeight(7);
