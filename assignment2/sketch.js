@@ -1,4 +1,4 @@
-//setting up background color
+//setting up the variables for the background color
 let backgroundR = 0;
 let backgroundG = 0;
 let backgroundB = 0;
@@ -8,28 +8,32 @@ function setup() {
 }
 
 function draw() {
-  //conditional for background
+  ////////background
+
+  //when mouse is pressed, turn bg to red
   if (mouseIsPressed) {
-    backgroundR = random(200, 255); //flickering red effect
+    //generate a random R value for bg color when mouse is pressed
+    //to create a flickering red bg
+    backgroundR = random(200, 255);
     backgroundG = 0;
     backgroundB = 0;
-    // generate a random R value for bg color when mouse is pressed
-    // to create a flickering red bg
   }
   background(backgroundR, backgroundG, backgroundB);
 
-  //setting up variables for interactivity
-  //setting angle for rotation
+  ////////setting up variables for interactivity
+
+  //angle for rotation responsive to mouseY
   let angle = map(mouseY, 0, height, 0, 360);
-  //setting colors that respond to mouseX and mouseY
+
+  //colors that respond to mouseX and mouseY
   let colorx = map(mouseX, 0, width, 0, 255);
   let colory = map(mouseY, 0, height, 0, 255);
-  //setting a size that's responsive to mousemovement
+
+  //size responsive to mouse Y
   //this will be added onto pedalSize
-  let sizeIncrease = map(mouseY, 0, height, 0, 40);
+  let sizeIncrease = map(mouseY, 0, height, 0, 60);
 
-  //setting a rotation that is responsive to mouse position
-
+  //for loop for the grid
   for (let x = 50; x < width; x += 100) {
     for (let y = 50; y < height; y += 100) {
       push();
@@ -37,50 +41,53 @@ function draw() {
       translate(x, y);
 
       ///////variation on y axis
+
       //increasing the size as y increases
       let pedalSize;
       pedalSize = map(y, 0, height, 90, 120);
+
       //rotating slightly as y increases
       let rotation;
       rotation = map(y, 0, height, 0, 90);
 
       strokeWeight(4);
-      noFill();
-
-      //creating a conditional for the shape
-      //the shape changes based on mouseclick
 
       //adding interactive rotation based on mouse position
       rotate(radians(360 - rotation));
       rotate(radians(angle - y / 5));
 
+      //creating a conditional for the shape
+      //the shape changes based on mouse click
       if (mouseIsPressed == true) {
-        //if mouse is pressed, draw darts
-        //create a jittering effect
+        ////////if mouse is pressed, draw darts
+
+        //create a jittering effect using random values
+        //applies to each individual shape
         let jitterX = random(-3, 3);
         let jitterY = random(-3, 3);
         translate(jitterX, jitterY);
 
-        //changing the color and opacity based on mouse position
-        //also making the colors vary a bit along the axes
+        //changing the opacity based on mouse position
+        //opacity increases as mouse increases (within 100-255)
         let opacity = map(colorx, 0, 255, 100, 255);
-        fill(0, 0, 0, 100 + opacity);
-        stroke(0, 0, 0, 100 + opacity);
+        fill(0, 0, 0, opacity);
+        stroke(0, 0, 0, opacity);
 
-        //calling dart functions
+        //draw darts
         //size increases as mouseY increases
         //decreasing the scale of the transformation
         //since the rotating shapes are half the size of the ellipsis
         drawDart(pedalSize * 0.5 + sizeIncrease * 0.8);
-        pop();
-        //have to add this here otherwise the grid breaks
-      } else {
-        //otherwise, drawflowers
 
-        //changing the colors and opacity based on mouse position
+        //restore transformations
+        //have to add this here otherwise the grid breaks
+        pop();
+      } else {
+        //otherwise, draw flowers
+
+        //dynamic colors based on mouse position
         //opacity increases as mouseX increases
-        //a different color scheme from dart (bluer)
-        //also making the colors vary a bit along the axes
+        //also involving x & y to make the colors vary a bit along the axes
         fill(colorx - x * 0.2, colory - y * 0.3, 200, colorx / 2);
         stroke(colorx - x * 0.2, colory - y * 0.3, 200, 150);
 
@@ -99,7 +106,7 @@ function draw() {
 //reference: https://p5js.org/reference/p5/function/
 //these are all small shapes repeated in a radial pattern
 function drawFlower(w, h) {
-  //using ellipsis and rotate to create the flower shape
+  //using ellipsis and rotate ellipsis to create the flower shape
   rotate(radians(22.5));
   ellipse(0, 0, w, h);
   rotate(radians(45));
@@ -136,7 +143,13 @@ function drawDart(h) {
 
 //changing the background color when the mouse is released
 function mouseReleased() {
-  backgroundR = random(255); // generate a random R value for my background color
-  backgroundG = random(255); // generate a random G value for my background color
-  backgroundB = random(255); // generate a random B value for my background color
+  backgroundR = random(255); //generate a random R value for my background color
+  backgroundG = random(255); //generate a random G value for my background color
+  backgroundB = random(255); //generate a random B value for my background color
+}
+
+//resize the window automatically
+//reference: https://p5js.org/reference/p5/resizeCanvas/
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }
