@@ -63,14 +63,15 @@ function draw() {
 
         //changing the color and opacity based on mouse position
         //also making the colors vary a bit along the axes
-        fill(50, 50, 50, colorx / 2);
-        stroke(50, (colorx + x * 0.1) * 0.2, (colory + y * 0.1) * 0.2, 150);
+        let opacity = map(colorx, 0, 255, 100, 255);
+        fill(0, 0, 0, 100 + opacity);
+        stroke(0, 0, 0, 100 + opacity);
 
         //calling dart functions
         //size increases as mouseY increases
         //decreasing the scale of the transformation
         //since the rotating shapes are half the size of the ellipsis
-        drawDart(pedalSize * 0.5 + sizeIncrease * 0.5);
+        drawDart(pedalSize * 0.5 + sizeIncrease * 0.8);
         pop();
         //have to add this here otherwise the grid breaks
       } else {
