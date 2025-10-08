@@ -161,7 +161,7 @@ function bgColor() {
 function stars() {
   // number of stars corresponds to the current minute
   randomSeed(minute());
-  // this prevents the starts from rerendering every frame
+  // this prevents the stars from rerendering every frame
   // reference: https://p5js.org/reference/p5/randomSeed/
   let numStars = minute();
   noStroke();
@@ -176,4 +176,10 @@ function stars() {
     fill(255, 255, 255, opacity);
     ellipse(x, y, size);
   }
+}
+
+//resize the window automatically
+//reference: https://p5js.org/reference/p5/resizeCanvas/
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }
