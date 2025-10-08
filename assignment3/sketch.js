@@ -12,7 +12,6 @@ My next steps:
 5. add more visual elements (other attractions) if i have time
 */
 
-let h = 200; // this is for the radius of the ferris wheel or height of the spokes
 let angle = 0; // setting this up for the rotation speed of theanimation
 
 function setup() {
@@ -26,7 +25,7 @@ function draw() {
 
   // --- ground ---
   fill("rgba(0, 0, 0, 1)");
-  rect(0, height - 130, width, 130);
+  rect(0, height * 0.85, width, 130);
 
   // --- stars ---
   stars();
@@ -34,7 +33,7 @@ function draw() {
   // --- ferris wheel ---
   push();
   translate(width / 2, height / 2); //moving it to the center
-  ferrisWheel();
+  ferrisWheel(height * 0.4, 200);
   pop(); //reset the translation
 
   // keeping track of time here (will delete)
@@ -49,7 +48,9 @@ function draw() {
 
 // --- ferris wheel ---
 // the ferris wheel will represent the seconds as it rotates fully every minute
-function ferrisWheel() {
+function ferrisWheel(baseHeight, h) {
+  // h is the size of the spokes
+
   angle += 0.1; // setting rotation speed
 
   // next step: use the second() function for this element
@@ -111,7 +112,6 @@ function ferrisWheel() {
   ellipse(0, 0, 400);
 
   // base
-  let baseHeight = 250;
   noStroke();
   fill("black");
   beginShape();
