@@ -1,22 +1,32 @@
 /*
-So far I have the basic elements:
-ferris wheel - seconds
-stars - minute
-sky - hour
-
-My next steps:
-1. use the second() function for the rotation of the ferris wheel
+To do
+1. use the second() function for the rotation of the ferris wheel 
+    - done with millis()
 2. find a way to mark a full rotation? like making one of the carriages different
+    - done with flickering lights
 3. make the stars refresh every hour instead of minute
+    - need help
 4. find a better/simpler way to customize the nightsky, perhaps also giving it a smoother gradient/transition
+    - done
 5. add more visual elements (other attractions) if i have time
 */
 
 let angle = 0; // setting this up for the rotation speed of theanimation
 
+let prevHour = 0;
+let prevMin = 0; // track when to add a new star
+
+let starsX = []; // create an array for stars x coordinate
+let starsY = []; // create an array for stars y coordinate
+let starsSize = []; // array for stars size
+let starsOpacity = []; // array for stars opacity
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   angleMode(DEGREES); // using degrees so it's easier to calculate
+  colorMode(HSL); // using HSL so it's easier to adjust the hue
+
+  //initStars(); // set up the stars
 }
 
 function draw() {
@@ -39,7 +49,7 @@ function draw() {
   // keeping track of time here (will delete)
   fill("green");
   textSize(24);
-  text(hour() + ":" + minute(), 20, 20);
+  text(hour() + ":" + minute() + ":" + second(), 20, 20);
 }
 
 // ----- functions -----
@@ -51,10 +61,10 @@ function draw() {
 function ferrisWheel(baseHeight, h) {
   // h is the size of the spokes
 
-  angle += 0.1; // setting rotation speed
-
-  // next step: use the second() function for this element
-  // map seconds to angle? (need to figure out frame rate)
+  // mapping angle to second() results in a very glitchy animation
+  // so I'm using millis() instead
+  // 60000 ms = 1 min, 360 degrees per min
+  angle = (millis() / 60000) * 360;
 
   // thin spokes
   for (let x = 0; x < 360; x += 6) {
@@ -76,6 +86,7 @@ function ferrisWheel(baseHeight, h) {
     rotate(x + angle);
 
     // triangular spokes
+    noStroke();
     fill("rgba(0, 0, 0, 1)");
     triangle(-8, 0, 0, h, 8, 0);
 
@@ -89,7 +100,15 @@ function ferrisWheel(baseHeight, h) {
     fill("black");
     ellipse(0, 0, 40);
     // windows: orange
-    fill("rgba(255, 108, 49, 1)");
+    // flickering lights that shuts off every minute
+    if (second() == 0) {
+      fill(30, 100, 0);
+    } else {
+      let flicker = random(0.8, 1); // random brightness
+      fill(30, 100, 50 * flicker);
+      rect(5, -5, 15, 15);
+      rect(-20, -5, 15, 15);
+    }
     rect(5, -5, 15, 15);
     rect(-20, -5, 15, 15);
     // outline: black
@@ -130,51 +149,71 @@ function ferrisWheel(baseHeight, h) {
 
 function bgColor() {
   let hr = hour();
-
-  // customizing the color so they are realistic to the time of the day
-  // doing this manually for now but I want to find a way to simplify
-  if (hr >= 0 && hr < 4) {
-    // Deep night (navy blue)
-    background("rgba(33, 28, 87, 1)");
-  } else if (hr >= 4 && hr < 6) {
-    background("rgba(10, 49, 132, 1)");
-  } else if (hr >= 6 && hr < 9) {
-    // Morning — blue getting brighter
-    background("rgba(30, 96, 183, 1)");
-  } else if (hr >= 9 && hr < 17) {
-    // Daytime — bright sky blue
-    background("rgba(0, 110, 255, 1)");
-  } else if (hr >= 17 && hr < 19) {
-    // Sunset — warm pink-orange tones
-    background("rgba(208, 100, 130, 1)");
-  } else if (hr >= 19 && hr < 21) {
-    // Evening — darkening purple
-    background("rgba(119, 63, 139, 1)");
+  // instead of a realistic day/night cycle, I want to create a
+  // stylized, moody night sky that transitions from red to blue
+  // the hue values for those colors are between 210 - 360 (0)
+  // but since I still want it to cycle, I'll map it to the
+  // difference between the extreme and create a conditional
+  if (hr < 12) {
+    h = map(hr, 0, 11, 220, 360);
+    //  from 0–11 hours, go from red (360) to blue (220)
   } else {
-    // Late night — back to dark navy
-    background("rgba(32, 37, 87, 1)");
+    h = map(hr, 12, 23, 360, 220);
+    //  from 12-23 hours, go from blue to red
+  }
+
+  for (let y = 0; y < height; y++) {
+    // vertical brightness gradient
+    let b = map(y, 0, height, 10, 50);
+    stroke(h, 50, b);
+    line(0, y, width, y);
   }
 }
 
 // ----- stars -----
+// number of stars corresponds to the current minute
+
+// function initStars() {
+//   // set the star number according to current minute
+//   // fill the arrays with one star per current minute
+//   let currentMin = minute();
+//   for (let i = 0; i < currentMin; i++) {
+//     starsX.push(random(width));
+//     starsY.push(random(height * 0.9));
+//     starsSize.push(random(2, 8));
+//     starsOpacity.push(random(0.5, 1));
+//   }
+//   prevMin = currentMin;
+// }
 
 function stars() {
-  // number of stars corresponds to the current minute
-  randomSeed(minute());
-  // this prevents the stars from rerendering every frame
-  // reference: https://p5js.org/reference/p5/randomSeed/
-  let numStars = minute();
+  // every minute, add a star to the array
+  // reference: https://p5js.org/reference/p5/Array/
+  // refresh every hour
+
+  // reset the sky by clearing the arraysevery hour
+  if (prevHour != hour()) {
+    starsX = [];
+    starsY = [];
+    starsSize = [];
+    starsOpacity = [];
+    prevHour = hour();
+  }
+
+  // add a star per minute
+  if (prevMin != minute()) {
+    starsX.push(random(width));
+    starsY.push(random(height * 0.8));
+    starsSize.push(random(0, 10));
+    starsOpacity.push(random(0.1, 1));
+    prevMin = minute();
+  }
+
+  // draw all existing stars
   noStroke();
-  for (let i = 0; i < numStars; i++) {
-    // random position
-    let x = random(width); // fill width
-    let y = random(height * 0.8); // limit it to upper half of canvas
-    // random radius between 1 and 5
-    let size = random(2, 5);
-    // random opacity
-    let opacity = random(180, 255);
-    fill(255, 255, 255, opacity);
-    ellipse(x, y, size);
+  for (let i = 0; i < starsX.length; i++) {
+    fill(0, 100, 100, starsOpacity[i]);
+    ellipse(starsX[i], starsY[i], starsSize[i]);
   }
 }
 
