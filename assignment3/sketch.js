@@ -8,48 +8,61 @@ To do
     - need help
 4. find a better/simpler way to customize the nightsky, perhaps also giving it a smoother gradient/transition
     - done
-5. add more visual elements (other attractions) if i have time
 */
 
 let angle = 0; // setting this up for the rotation speed of theanimation
-
-let prevHour = 0;
-let prevMin = 0; // track when to add a new star
-
-let starsX = []; // create an array for stars x coordinate
-let starsY = []; // create an array for stars y coordinate
-let starsSize = []; // array for stars size
-let starsOpacity = []; // array for stars opacity
+let flicker; // setting this up for ferris wheel flicker
+let stars = []; // creating an array to keep track of the stars
+let groundHeight = []; // creating an array to keep trak of the ground
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   angleMode(DEGREES); // using degrees so it's easier to calculate
   colorMode(HSL); // using HSL so it's easier to adjust the hue
 
-  //initStars(); // set up the stars
+  // creating 60 possible starts that reveal themselves over an hour
+  for (let i = 0; i < 60; i++) {
+    stars[i] = new Star();
+  }
+
+  // creating a textured ground by randomizing the height
+  // using an array to prevent it from resetting every frame
+  fill("rgba(0, 0, 0, 1)");
+  for (i = 0; i < width; i++) {
+    groundHeight.push(random(height * 0.83, height * 0.86));
+  }
 }
 
 function draw() {
   // --- background ---
+  // calling the bg function
   bgColor();
 
-  // --- ground ---
-  fill("rgba(0, 0, 0, 1)");
-  rect(0, height * 0.85, width, 130);
-
   // --- stars ---
-  stars();
+  // calling the display method to display the number of stars
+  // according to the current minute
+  for (let i = 0; i < minute(); i++) {
+    stars[i].display();
+  }
+
+  // --- ground ---
+  // rendering the ground with the random heights stored in the array
+  noStroke();
+  fill("black");
+  for (i = 0; i < width; i++) {
+    rect(i, groundHeight[i], 10, 150);
+  }
 
   // --- ferris wheel ---
   push();
-  translate(width / 2, height / 2); //moving it to the center
+  translate(width / 2, height / 2); // moving it to the center
   ferrisWheel(height * 0.4, 200);
   pop(); //reset the translation
 
   // keeping track of time here (will delete)
-  fill("green");
-  textSize(24);
-  text(hour() + ":" + minute() + ":" + second(), 20, 20);
+  // fill("green");
+  // textSize(24);
+  // text(hour() + ":" + minute() + ":" + second(), 20, 20);
 }
 
 // ----- functions -----
@@ -58,21 +71,23 @@ function draw() {
 
 // --- ferris wheel ---
 // the ferris wheel will represent the seconds as it rotates fully every minute
+// the lights in the carriages flicker every minute
 function ferrisWheel(baseHeight, h) {
-  // h is the size of the spokes
+  // parameters: height of the base; height of the spokes
 
   // mapping angle to second() results in a very glitchy animation
   // so I'm using millis() instead
   // 60000 ms = 1 min, 360 degrees per min
   angle = (millis() / 60000) * 360;
 
-  // thin spokes
+  // drawing the thin spokes using a for loop since it's repeating in a radial pattern
   for (let x = 0; x < 360; x += 6) {
-    push(); //save the current transform
+    // 360/6=60 spokes
+    push();
 
     rotate(x + angle); //rotate this section
-    //drawing a section to be repeated
-    //these are the radial pillars
+    // drawing a section to be repeated
+    // these are the radial pillars
     strokeWeight(2);
     stroke("black");
     line(0, 0, 0, h);
@@ -82,6 +97,7 @@ function ferrisWheel(baseHeight, h) {
   // spokes + carriages
   // using another for loop since they are repeated at diff frequencies
   for (let x = 0; x < 360; x += 30) {
+    //360/30=12 carriages
     push();
     rotate(x + angle);
 
@@ -100,14 +116,13 @@ function ferrisWheel(baseHeight, h) {
     fill("black");
     ellipse(0, 0, 40);
     // windows: orange
-    // flickering lights that shuts off every minute
+    // the lights flicker off every full minute on the clock
     if (second() == 0) {
       fill(30, 100, 0);
     } else {
-      let flicker = random(0.8, 1); // random brightness
+      flicker = random(0.8, 1);
+      // randomized brightness to create the flickering effect
       fill(30, 100, 50 * flicker);
-      rect(5, -5, 15, 15);
-      rect(-20, -5, 15, 15);
     }
     rect(5, -5, 15, 15);
     rect(-20, -5, 15, 15);
@@ -121,7 +136,7 @@ function ferrisWheel(baseHeight, h) {
     pop();
   }
 
-  // outer rings
+  // drawing the outer rings
   noFill();
   ellipse(0, 0, 50);
   stroke("black");
@@ -130,7 +145,7 @@ function ferrisWheel(baseHeight, h) {
   ellipse(0, 0, 360);
   ellipse(0, 0, 400);
 
-  // base
+  // drawing the base using a custom shape
   noStroke();
   fill("black");
   beginShape();
@@ -151,15 +166,15 @@ function bgColor() {
   let hr = hour();
   // instead of a realistic day/night cycle, I want to create a
   // stylized, moody night sky that transitions from red to blue
-  // the hue values for those colors are between 210 - 360 (0)
+  // the hue values for those colors are between 210 - 360
   // but since I still want it to cycle, I'll map it to the
-  // difference between the extreme and create a conditional
+  // difference between the extremes and create a conditional
   if (hr < 12) {
     h = map(hr, 0, 11, 220, 360);
-    //  from 0–11 hours, go from red (360) to blue (220)
+    // from 0–11 hours, go from red (360) to blue (220)
   } else {
     h = map(hr, 12, 23, 360, 220);
-    //  from 12-23 hours, go from blue to red
+    // from 12-23 hours, go from blue to red
   }
 
   for (let y = 0; y < height; y++) {
@@ -171,49 +186,21 @@ function bgColor() {
 }
 
 // ----- stars -----
-// number of stars corresponds to the current minute
-
-// function initStars() {
-//   // set the star number according to current minute
-//   // fill the arrays with one star per current minute
-//   let currentMin = minute();
-//   for (let i = 0; i < currentMin; i++) {
-//     starsX.push(random(width));
-//     starsY.push(random(height * 0.9));
-//     starsSize.push(random(2, 8));
-//     starsOpacity.push(random(0.5, 1));
-//   }
-//   prevMin = currentMin;
-// }
-
-function stars() {
-  // every minute, add a star to the array
-  // reference: https://p5js.org/reference/p5/Array/
-  // refresh every hour
-
-  // reset the sky by clearing the arraysevery hour
-  if (prevHour != hour()) {
-    starsX = [];
-    starsY = [];
-    starsSize = [];
-    starsOpacity = [];
-    prevHour = hour();
+// the number of stars corresponds to the current minute
+// creating a class to better keep track of their position
+class Star {
+  constructor() {
+    // setting a random position and opacity for each start that's created
+    this.x = random(width);
+    this.y = random(height * 0.85);
+    this.opacity = random(0.1, 0.8);
   }
 
-  // add a star per minute
-  if (prevMin != minute()) {
-    starsX.push(random(width));
-    starsY.push(random(height * 0.8));
-    starsSize.push(random(0, 10));
-    starsOpacity.push(random(0.1, 1));
-    prevMin = minute();
-  }
-
-  // draw all existing stars
-  noStroke();
-  for (let i = 0; i < starsX.length; i++) {
-    fill(0, 100, 100, starsOpacity[i]);
-    ellipse(starsX[i], starsY[i], starsSize[i]);
+  // draw each star at its randomized position when this method is called
+  display() {
+    noStroke();
+    fill(0, 100, 100, this.opacity);
+    circle(this.x, this.y, 10);
   }
 }
 
