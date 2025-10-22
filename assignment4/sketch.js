@@ -1,32 +1,106 @@
 // Donuts
 let donuts = [];
+let donutAmount = 50;
+let buttonRadius = 40;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
   colorMode(HSL);
+  // changing the color setting so it's easier to adjust the hue
   angleMode(DEGREES);
-  background(50, 100, 80);
-}
-
-function draw() {
+  rectMode(CENTER);
+  // setting rect mode so it's easier to line it up to the screen
   background(50, 100, 80);
 
-  for (let i = 0; i < donuts.length; i++) {
-    donuts[i].display();
+  // set up the array by generating random donuts
+  for (i = 0; i < donutAmount; i++) {
+    let newDonut = new Donut(
+      random(width),
+      random(height),
+      random(80, 100),
+      random(["original", "strawberry", "chocolate"])
+    );
+    donuts.push(newDonut);
   }
 }
 
-function mousePressed() {
-  let newDonut = new Donut(
-    mouseX,
-    mouseY,
-    random(100, 200),
-    random(["original", "strawberry", "chocolate"])
-  );
-  donuts.push(newDonut);
+function draw() {
+  background("#ffee31ff");
 
-  //strawberrySprinkle(mouseX, mouseY, random(100, 200));
+  // when there are no donuts left, show the regenerate button
+  if (donuts.length === 0) {
+    // creating a button to generate the donuts
+    // rectangle background
+    fill("#e0311eff");
+    noStroke();
+    rect(width / 2, height * 0.49, 400, 50);
+    // text
+    strokeWeight(1);
+    stroke("#ffffffff");
+    fill("#ffffffff");
+    textSize(24);
+    textFont("Courier New");
+    textAlign(CENTER);
+    text("CLICK TO MAKE SOME MORE!", width * 0.5, height * 0.5);
+  }
+
+  // display all the donuts in the array
+  for (let i = 0; i < donuts.length; i++) {
+    donuts[i].display();
+  }
+
+  // at the beginning when the all the donuts are still there
+  // add instructional text that goes on top of everything
+  if (donuts.length === donutAmount) {
+    // rectangle background
+    fill("#e0311eff");
+    noStroke();
+    rect(width / 2, height * 0.49, 380, 50);
+    // text
+    strokeWeight(1);
+    stroke("#ffffffff");
+    fill("#ffffffff");
+    textSize(24);
+    textFont("Courier New");
+    textAlign(CENTER);
+    text("CLICK TO EAT THE DONUTS!", width * 0.5, height * 0.5);
+  }
+}
+
+// for mouse interactivity
+function mousePressed() {
+  // when there are donuts on the screen
+  if (donuts.length != 0) {
+    for (let i = 0; i < donuts.length; i++) {
+      // loop through the donut array
+      if (donuts[i].isClicked(mouseX, mouseY)) {
+        // delete the clicked donut from the array
+        donuts.splice(i, 1);
+      }
+    }
+  } else {
+    // If there's no donut left, regenerate donuts
+    for (let i = 0; i < donutAmount; i++) {
+      let newDonut = new Donut(
+        random(width),
+        random(height),
+        random(80, 100),
+        random(["original", "strawberry", "chocolate"])
+      );
+      donuts.push(newDonut);
+    }
+  }
+
+  // --- old ---
+  // generate a random donut wherever users click
+  // let newDonut = new Donut(
+  //   mouseX,
+  //   mouseY,
+  //   random(80, 150),
+  //   random(["original", "strawberry", "chocolate"])
+  // );
+  // donuts.push(newDonut);
 }
 
 class Donut {
@@ -44,6 +118,7 @@ class Donut {
     if (this.flavor != "original") {
       // draw icing only for flavors that are NOT original
       for (let i = 0; i < 360; i += 10) {
+        // drawing the icings as slightly offset dots around the donut
         let icingX = (cos(i) * this.d) / random(1.65, 2);
         let icingY = (sin(i) * this.d) / random(1.6, 2);
         let icingWeight = random(this.d * 0.4, this.d * 0.6);
@@ -53,6 +128,7 @@ class Donut {
 
       // draw sprinkles only for flavors that are NOT original
       for (let i = 0; i < 360; i += 5) {
+        // the sprinkles are smaller and denser offset dots around the donut
         let sprinklesX = (cos(i) * this.d) / random(1.2, 2.5);
         let sprinklesY = (sin(i) * this.d) / random(1.2, 2.5);
         let sprinklesHue = random(0, 360);
@@ -73,6 +149,7 @@ class Donut {
     translate(this.x, this.y);
 
     // shadow
+    // they need a hole in the middle so I did that by making them circles with thick strokes
     noFill();
     stroke(30, 100, 45);
     strokeWeight(this.d * 0.75);
@@ -115,8 +192,17 @@ class Donut {
     pop();
   }
 
-  move() {
-    // I want the donuts to move along a conveyer belt
+  isClicked(mx, my) {
+    // this function checks if the mouse is inside the donut and returns a boolean
+    let mouseDist = dist(mx, my, this.x, this.y);
+    // the donut is a ring, so check if distance is less than outer radius
+    // and greater than inner radius (the hole)
+    // since the size of the donut was created using stroke weight I kinda had to eyeball this
+    let outerRadius = this.d * 0.875;
+    let innerRadius = this.d * 0.1;
+
+    // return true if clicked on the donut ring (not the hole)
+    return mouseDist < outerRadius && mouseDist > innerRadius;
   }
 }
 
