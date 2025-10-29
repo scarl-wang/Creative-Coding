@@ -1,59 +1,88 @@
-let pX = 0; // these are origin points
-let pY = 0;
-let targetX = 0; // these are destination points
-let targetY = 0;
-let currentX = 200; // these are current positions
-let currentY = 200;
-// how much to move from origin to destination (0 to 1)
-let lerpAmt = 0;
-let speed = 0.01;
+// Sketch 2: travelling circle using lerp()
 
-let prevSecond = 0; // to store the second
+// --- setting up the variables ---
+
+// origin point, where the circle is moving from
+let scarl2pX = 0;
+let scarl2pY = 0;
+// destination point
+let scarl2targetX = 0;
+let scarl2targetY = 0;
+// current position of the circle
+let scarl2currentX = 200;
+let scarl2currentY = 200;
+// progress from origin to destination (0 to 1)
+let scarl2lerpAmt = 0;
+// custom speed
+let scarl2speed = 0.01;
+// perlin noise position
+let scarl2noisePosition = 0;
+// this is to store the second
+let scarl2prevSecond = 0;
 
 function setup() {
   createCanvas(400, 400);
-  background("yellow");
   angleMode(DEGREES);
+  colorMode(HSB);
 }
 
 function draw() {
-  background("orange");
+  // create two diff noise values
+  let noiseVal = noise(scarl2noisePosition);
 
-  // create striped pattern for background
-  for (let i = 0; i < 400; i += 6) {
-    fill(0);
-    rect(i, 0, 3, 400);
+  // using noise to create a smooth transitioning yellow background
+  let colorVal = map(noiseVal, 0, 1, 40, 70);
+  background(colorVal, 100, 100);
+
+  // --- draw background pattern using cocentric circles ---
+
+  // start from middle
+  translate(200, 200);
+
+  stroke(0);
+  noFill();
+
+  for (let i = 10; i < 800; i += 12) {
+    strokeWeight(5-i/200);
+
+    circle(0, 0, i);
   }
 
-  if (prevSecond != second()) {
-    prevSecond = second();
-    targetX = random(400);
-    targetY = random(400);
-    lerpAmt = 0;
-    pX = currentX;
-    pY = currentY;
+  // --- drawing the lerping circle ---
+
+  // every second, move it to a random position
+  if (scarl2prevSecond != second()) {
+    // update the second tracker
+    scarl2prevSecond = second();
+    // generate a random position within the frame
+    scarl2targetX = random(-200, 200);
+    scarl2targetY = random(-200, 200);
+    // reset lerp progress
+    scarl2lerpAmt = 0;
+    scarl2pX = scarl2currentX;
+    scarl2pY = scarl2currentY;
   }
 
-  // set current position according to lerp functions
-  currentX = lerp(pX, targetX, lerpAmt);
-  currentY = lerp(pY, targetY, lerpAmt);
+  // calculate current position using lerp
+  scarl2currentX = lerp(scarl2pX, scarl2targetX, scarl2lerpAmt);
+  scarl2currentY = lerp(scarl2pY, scarl2targetY, scarl2lerpAmt);
 
-  lerpAmt = constrain(lerpAmt + speed, 0, 1);
+  // update lerp amount for next frame (keep it between 0-1)
+  scarl2lerpAmt = constrain(scarl2lerpAmt + scarl2speed, 0, 1);
 
-  drawScreen();
-}
+  // update noise position
+  scarl2noisePosition += scarl2speed;
 
-function drawScreen() {
+  // --- draw the travelling circle ---
   push();
-  translate(currentX, currentY);
+  translate(scarl2currentX, scarl2currentY);
 
-  // Draw concentric circles (rings)
   stroke(0);
   strokeWeight(3);
   noFill();
 
-  for (let radius = 10; radius < 200; radius += 8) {
-    circle(0, 0, radius);
+  for (let i = 10; i < 700; i += 12) {
+    circle(0, 0, i);
   }
   pop();
 }

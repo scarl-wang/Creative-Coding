@@ -1,56 +1,59 @@
-let pX = 0; // these are origin points
-let pY = 0;
-let targetX = 0; // these are destination points
-let targetY = 0;
-let currentX = 0; // these are current positions
-let currentY = 0;
-// how much to move from origin to destination (0 to 1)
-let lerpAmt = 0;
-let speed = 0.01;
+// For this assignment, I want to play with the Moire effect,
+// using simple graphics and movements to create very dynamic optical illusions
 
-let prevSecond = 0; // to store the second
+// Sketch 1: two overlapping radial circles
+
+let scarl1noisePosition = 0;
+let scarl1speed = 0.01;
 
 function setup() {
   createCanvas(400, 400);
-  background("yellow");
   angleMode(DEGREES);
+  colorMode(HSB);
 }
 
 function draw() {
-  background("orange");
+  // create two diff noise values
+  let noiseVal1 = noise(scarl1noisePosition);
+  let noiseVal2 = noise(scarl1noisePosition + 100);
 
-  // create striped pattern for background
-  for (let i = 0; i < 400; i += 6) {
-    fill(0);
-    rect(i, 0, 3, 400);
-  }
+  // using noise to create a smooth transitioning blue background
+  let colorVal = map(noiseVal1, 0, 1, 190, 240);
+  background(colorVal, 100, 100);
 
-  if (prevSecond != second()) {
-    prevSecond = second();
-    targetX = random(400);
-    targetY = random(400);
-    lerpAmt = 0;
-    pX = currentX;
-    pY = currentY;
-  }
+  // increment noise offset for smooth animation
+  scarl1noisePosition += scarl1speed;
 
-  // set current position according to lerp functions
-  currentX = lerp(pX, targetX, lerpAmt);
-  currentY = lerp(pY, targetY, lerpAmt);
+  // ---- drawing the circles ----
 
-  lerpAmt = constrain(lerpAmt + speed, 0, 1);
+  // creating a smooth rotation for the circles
+  let rotation = (millis() / 100000) * 360;
 
-  drawScreen();
+  // using noise() to create a subtle movement along the x axis
+  // using two different noise positions so the movements aren't synced
+  let movement1 = map(noiseVal1, 0, 1, -20, 20);
+  let movement2 = map(noiseVal2, 0, 1, -20, 20);
+
+  // draw the left circle
+  drawCircle(170 + movement1, 200, 260, rotation);
+
+  // draw the right circle
+  drawCircle(230 + movement2, 200, 260, -rotation);
 }
 
-function drawScreen() {
+// since the circles are identical, I created a function to draw them
+function drawCircle(x, y, r, rotation) {
   push();
-  rectMode(CENTER);
-  translate(currentX, currentY);
-  rotate(1);
-  for (let i = -100; i < 100; i += 6) {
-    fill(0);
-    rect(i, 0, 3, 200);
+  translate(x, y);
+
+  for (let i = 0; i < 360; i += 2) {
+    push();
+    // rotate the circle smoothly
+    rotate(i + rotation);
+    noStroke();
+    fill(0, 0, 0);
+    triangle(0, 0, -2, -r, 2, -r);
+    pop();
   }
   pop();
 }
