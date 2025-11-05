@@ -29,7 +29,6 @@ function draw() {
     push();
     translate(200, 200);
     rotate(rotation);
-    strokeWeight(1);
     fill(0);
     rect(i, 0, 2, 600);
     pop();
