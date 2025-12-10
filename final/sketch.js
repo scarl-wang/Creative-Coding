@@ -463,7 +463,7 @@ function drawDonut(r1, r2, spacing, t, s, speed) {
   translate((width - video.width) / 2, (height - video.height) / 2);
 
   // render it at the stored nose coordinates
-  translate(noseX, noseY - height * 0.1); // move it a little higher like where the brain is
+  translate(noseX, noseY - height * 0.05); // move it a little higher like where the brain is
   rotateX(rotation); // add rotational movement along the X axis
   rotation += 0.5; // rotational speed
 

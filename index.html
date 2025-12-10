@@ -1,35 +1,178 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Scarlett Wang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <style>
       * {
         box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, sans-serif;
+        background: #fafafa;
+        color: #1a1a1a;
+        line-height: 1.6;
+        padding: 80px 24px;
+        min-height: 100vh;
+      }
+
+      main {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      header {
+        margin-bottom: 64px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      h1 {
+        font-family: 'Newsreader', Georgia, serif;
+        font-weight: 400;
+        font-size: 2rem;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        font-size: 0.875rem;
+        color: #666;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      section {
+        margin-bottom: 48px;
+      }
+
+      h2 {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 20px;
+      }
+
+      ul {
+        list-style: none;
+      }
+
+      li {
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      li:last-child {
+        border-bottom: none;
+      }
+
+      a {
+        color: #1a1a1a;
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      a:hover {
+        color: #666;
+      }
+
+      /* nested list for multi-part projects */
+      .project-group > span {
+        display: block;
+        margin-bottom: 12px;
+        color: #1a1a1a;
+      }
+
+      .project-parts {
+        display: flex;
+        gap: 24px;
+        padding-left: 0;
+      }
+
+      .project-parts li {
+        border: none;
+        padding: 0;
+      }
+
+      .project-parts a {
+        font-size: 0.875rem;
+        color: #666;
+        padding-bottom: 2px;
+        border-bottom: 1px solid transparent;
+      }
+
+      .project-parts a:hover {
+        color: #1a1a1a;
+        border-bottom-color: #1a1a1a;
+      }
+
+      /* Subtle number labels */
+      .week-num {
+        font-size: 0.75rem;
+        color: #bbb;
+        margin-right: 12px;
+        font-variant-numeric: tabular-nums;
       }
     </style>
-    <meta name="robots" content="noindex">
   </head>
   <body>
-    <h1>Scarlett Wang N12677408</h1>
-    <ul>
-      <li><a href="./week1/">Week 1 notes</a></li>
-      <li><a href="./week2/">Week 2 notes</a></li>
-      <li><a href="./week3/">Week 2 notes</a></li>
-      <li><a href="./assignment1/">Assignment 1: Geometric Abstraction</a></li>
-      <li><a href="./week4/">Week 4 notes</a></li>
-      <li><a href="./assignment2/">Assignment 2: Generative Pattern</a></li>
-      <li><a href="./assignment3/">Assignment 3: Abstract Clock</a></li>
-      <li><a href="./assignment4/">Assignment 4: Object Factory</a></li>
-      <li>Assignment 5: Projection Mapping <ul>
-        <li><a href="./assignment5-1/">Sketch 1</a></li>
-        <li><a href="./assignment5-2/">Sketch 2</a></li>
-        <li><a href="./assignment5-3/">Sketch 3</a></li>
-      </ul></li>
-      <li>Final Project: What's going on in your head? <ul>
-        <li><a href="./final-part-1/">Part 1</a></li>
-        <li><a href="./final-part-2/">Part 2</a></li>
-        <li><a href="./final/">Final</a></li>
-      </ul></li>
-    </ul>
+    <main>
+      <header>
+        <h1>Scarlett Wang</h1>
+        <p class="subtitle">N12677408</p>
+      </header>
+
+      <section>
+        <h2>Weekly Notes</h2>
+        <ul>
+          <li><span class="week-num">01</span><a href="./week1/">Week 1</a></li>
+          <li><span class="week-num">02</span><a href="./week2/">Week 2</a></li>
+          <li><span class="week-num">03</span><a href="./week3/">Week 3</a></li>
+          <li><span class="week-num">04</span><a href="./week4/">Week 4</a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Assignments</h2>
+        <ul>
+          <li><a href="./assignment1/">Geometric Abstraction</a></li>
+          <li><a href="./assignment2/">Generative Pattern</a></li>
+          <li><a href="./assignment3/">Abstract Clock</a></li>
+          <li><a href="./assignment4/">Object Factory</a></li>
+          <li class="project-group">
+            <span>Projection Mapping</span>
+            <ul class="project-parts">
+              <li><a href="./assignment5-1/">Sketch 1</a></li>
+              <li><a href="./assignment5-2/">Sketch 2</a></li>
+              <li><a href="./assignment5-3/">Sketch 3</a></li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Final Project</h2>
+        <ul>
+          <li><a href="./final/">What's Going On in Your Head?</a></li>
+          <li class="project-group">
+            <span>Process</span>
+            <ul class="project-parts">
+              <li><a href="./final-part-1/">Part 1</a></li>
+              <li><a href="./final-part-2/">Part 2</a></li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+    </main>
   </body>
 </html>
