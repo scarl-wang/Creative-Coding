@@ -86,17 +86,27 @@
         color: #666;
       }
 
-      /* nested list for multi-part projects */
-      .project-group > span {
-        display: block;
-        margin-bottom: 12px;
-        color: #1a1a1a;
+      /* Subtle number labels */
+      .num {
+        font-size: 0.75rem;
+        color: #bbb;
+        margin-right: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Inline project with parts */
+      .project-inline {
+        display: flex;
+        align-items: baseline;
+      }
+
+      .project-inline .project-title {
+        margin-right: 8px;
       }
 
       .project-parts {
         display: flex;
-        gap: 24px;
-        padding-left: 0;
+        gap: 16px;
       }
 
       .project-parts li {
@@ -106,7 +116,7 @@
 
       .project-parts a {
         font-size: 0.875rem;
-        color: #666;
+        color: #999;
         padding-bottom: 2px;
         border-bottom: 1px solid transparent;
       }
@@ -116,12 +126,10 @@
         border-bottom-color: #1a1a1a;
       }
 
-      /* Subtle number labels */
-      .week-num {
-        font-size: 0.75rem;
-        color: #bbb;
-        margin-right: 12px;
-        font-variant-numeric: tabular-nums;
+      /* Separator between title and parts */
+      .separator {
+        color: #ddd;
+        margin: 0 4px;
       }
     </style>
   </head>
@@ -133,24 +141,16 @@
       </header>
 
       <section>
-        <h2>Weekly Notes</h2>
-        <ul>
-          <li><span class="week-num">01</span><a href="./week1/">Week 1</a></li>
-          <li><span class="week-num">02</span><a href="./week2/">Week 2</a></li>
-          <li><span class="week-num">03</span><a href="./week3/">Week 3</a></li>
-          <li><span class="week-num">04</span><a href="./week4/">Week 4</a></li>
-        </ul>
-      </section>
-
-      <section>
         <h2>Assignments</h2>
         <ul>
-          <li><a href="./assignment1/">Geometric Abstraction</a></li>
-          <li><a href="./assignment2/">Generative Pattern</a></li>
-          <li><a href="./assignment3/">Abstract Clock</a></li>
-          <li><a href="./assignment4/">Object Factory</a></li>
-          <li class="project-group">
-            <span>Projection Mapping</span>
+          <li><span class="num">01</span><a href="./assignment1/">Geometric Abstraction</a></li>
+          <li><span class="num">02</span><a href="./assignment2/">Generative Pattern</a></li>
+          <li><span class="num">03</span><a href="./assignment3/">Abstract Clock</a></li>
+          <li><span class="num">04</span><a href="./assignment4/">Object Factory</a></li>
+          <li class="project-inline">
+            <span class="num">05</span>
+            <span class="project-title">Projection Mapping</span>
+            <span class="separator"></span>
             <ul class="project-parts">
               <li><a href="./assignment5-1/">Sketch 1</a></li>
               <li><a href="./assignment5-2/">Sketch 2</a></li>
@@ -163,9 +163,10 @@
       <section>
         <h2>Final Project</h2>
         <ul>
-          <li><a href="./final/">What's Going On in Your Head?</a></li>
-          <li class="project-group">
-            <span>Process</span>
+          <li><span class="num">>></span><a href="./final/">What's Going On in Your Head?</a></li>
+          <li class="project-inline"><span class="num">>></span>
+            <span class="project-title">Process</span>
+            <span class="separator"></span>
             <ul class="project-parts">
               <li><a href="./final-part-1/">Part 1</a></li>
               <li><a href="./final-part-2/">Part 2</a></li>
