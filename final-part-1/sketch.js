@@ -100,6 +100,44 @@ class Star {
 }
 
 // --- resusable functions ----
+// drawing the toroids (donuts)
+function drawDonut() {
+  fill(255);
+  stroke(255);
+  beginShape(POINTS); // this makes the vertices discreet points
+  for (let theta = 0; theta < 360; theta += spacing1) {
+    // theta goes around the big ring
+    for (let phi = 0; phi < 360; phi += spacing2) {
+      // phi goes around the tube cross-sections
+
+      // set up the variables using the custom xn function
+      // these values reference the toroid function
+      let an = xn(cos(theta + angle), t);
+      let bn = xn(sin(theta + angle), t);
+      let cn = xn(cos(phi + angle), s);
+      let dn = xn(sin(phi + angle), s);
+
+      // referencing the formula in README
+      let x = (r1 * donutScale + r2 * donutScale * cn) * an;
+      let y = (r1 * donutScale + r2 * donutScale * cn) * bn;
+      let z = r2 * donutScale * dn;
+
+      vertex(x, y, z);
+
+      angle += speed;
+    }
+    // looping through the circle and draw points at equal distances
+  }
+  endShape();
+}
+
+function xn(x, n) {
+  // this is for the calculation of the supertorus
+  // x is the sin or cos function; n is the power to raise it to
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sign
+  let xn = Math.sign(x) * pow(abs(x), n);
+  return xn;
+}
 
 // mouse interactions for selections
 function mouseClicked() {
