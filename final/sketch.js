@@ -28,12 +28,9 @@ let rightEyeLeftIndex = 362;
 let rightEyeRightIndex = 263;
 
 // blink detection variables
-let bothEyesWereClosed = false;
+let eyesWereClosed = false;
 let blinkThreshold = 0.26; // eye aspect ratio threshold to compare with ear (the lower the more sensitive)
-
-// tracking blink count and previous count
-let blinkCount = 0;
-let previousBlinkCount = 0;
+let blinkJustHappened = false;
 
 // resets for each selection as cooldown
 let readyForSelection = true; // starts true for first selection
@@ -48,8 +45,8 @@ let noseY = 0; // these are the coordinates for the donut
 let donutScale = 1; // this is the overall size of the donut, responsive to head size
 
 // variables that are responsive to user choice
-let r1; // this is the radius of the larger donut
-let r2; // this is the radius of the tube cross-section
+let r1; // radius of the larger donut
+let r2; // radius of the small circles that form the tube cross-section
 let spacing; // this is the spacing/frequencing of circles revolving around the larger donut
 let speed = 0; // the speed at which the small dots of the donut move
 let t; // these are the powers to raise the sin/cos functions
@@ -91,15 +88,25 @@ function draw() {
     stars[i].show();
   }
 
-  // detect blinks and update nose position if face is present
   if (faces.length > 0) {
-    detectBlinks();
-    updateNosePosition(); // update nose from facemesh
+    detectBlinks(); // detect blinks if face is present
+
+    // get nose position form facemesh
+    let nose = faces[0].keypoints[noseIndex];
+    noseX = nose.x;
+    noseY = nose.y;
+
+    // calculate head size to adjust donut scale
+    let leftEye = faces[0].keypoints[leftEyeLeftIndex];
+    let rightEye = faces[0].keypoints[rightEyeRightIndex];
+    let headSize = dist(leftEye.x, leftEye.y, rightEye.x, rightEye.y);
+    donutScale = map(headSize, 50, 150, 0.5, 1.5); // map the headsize to the donut scale
+
     drawEyes(); // draw the eyes
   }
 
   // check for blink selections
-  checkBlinkSelection();
+  checkBlinkSelection(blinkJustHappened);
 
   // rendering screen progression
   if (currentScreen === 0) {
@@ -203,7 +210,7 @@ function mouseClicked() {
 // ========== FUNCTIONS FOR BLINK SELECTIONS ==========
 
 // check for blink selections
-function checkBlinkSelection() {
+function checkBlinkSelection(blinkJustHappened) {
   // to prevent blinks from being registered multiple times while users are still in a selection zone
   // i added this block to only allow a new selection when users exit the zones
 
@@ -217,19 +224,8 @@ function checkBlinkSelection() {
     readyForSelection = true;
   }
 
-  // if not ready for selection, don't process blinks
-  if (!readyForSelection) {
-    return;
-  }
-
-  // check if a new blink just happened
-  let newBlinkDetected = blinkCount > previousBlinkCount;
-
-  // update previous count for next frame
-  previousBlinkCount = blinkCount;
-
-  // only process selection if a new blink was detected
-  if (!newBlinkDetected) {
+  // if not ready for selection or no blink just happened, skip all the rest
+  if (!readyForSelection || !blinkJustHappened) {
     return;
   }
 
@@ -237,7 +233,7 @@ function checkBlinkSelection() {
 
   // Screen 1: ratio (shape) of the supertoroid
   // to remember: small circles overlap, creating middle tube; to forget: small circles dispersed
-  else if (currentScreen === 1) {
+  if (currentScreen === 1) {
     // if blink happens on the left option
     if (noseInside(-width * optionPosition, 0)) {
       r1 = 60;
@@ -295,22 +291,6 @@ function checkBlinkSelection() {
   }
 }
 
-// --------get nose position and size of the head--------
-function updateNosePosition() {
-  if (faces.length > 0) {
-    // get nose position form facemesh
-    let nose = faces[0].keypoints[noseIndex];
-    noseX = nose.x;
-    noseY = nose.y;
-
-    // calculate head size to adjust donut scale
-    let leftEye = faces[0].keypoints[leftEyeLeftIndex];
-    let rightEye = faces[0].keypoints[rightEyeRightIndex];
-    let headSize = dist(leftEye.x, leftEye.y, rightEye.x, rightEye.y);
-    donutScale = map(headSize, 50, 150, 0.5, 1.5);
-  }
-}
-
 // --------calculate if the nose is inside the option selection zone--------
 // x, y are the coordinates for the option
 function noseInside(x, y) {
@@ -335,10 +315,10 @@ function drawSelectionFeedback() {
 
   // highlight the zone where nose is currently positioned when selection is active
   if (noseInside(-width * optionPosition, 0) && readyForSelection) {
-    stroke("white"); // full opacity when nose is over left option
+    stroke("white"); // draw circle with full opacity when nose is over left option
     circle(-width * optionPosition, 0, 300);
   } else if (noseInside(width * optionPosition, 0) && readyForSelection) {
-    stroke("white"); // full opacity when nose is over left option
+    stroke("white"); // draw circle with full opacity when nose is over left option
     circle(width * optionPosition, 0, 300);
   }
 
@@ -351,13 +331,6 @@ function drawSelectionFeedback() {
 }
 
 // ======== DETECTING THE BLINKS ===========
-// I referenced this video's method of using EAR (Eye Aspect Ratio)
-// https://www.youtube.com/watch?v=br0eUIBROjo
-
-// I originally relied on the distance between the top and bottom points of the eyes
-// but there was too much error and didn't account for the distance between the
-// user and the screen, so comparing the vertical and horizontal distance
-// was actually more accurate and helpful
 
 function detectBlinks() {
   let face = faces[0];
@@ -383,12 +356,11 @@ function detectBlinks() {
   let eyesAreClosed = averageEAR < blinkThreshold; // determine if eyes are currently closed
 
   // detect blink only when change occurs
-  // this only triggers when eyesAreClosed is TRUE and bothEyesWereClosed is FALSE
-  // this prevents counting every frame when eyes are closed
-  if (eyesAreClosed && !bothEyesWereClosed) {
-    blinkCount += 1;
-  }
-  bothEyesWereClosed = eyesAreClosed; // resetting the state for next frame
+  // this only triggers when eyesAreClosed is TRUE and eyesWereClosed is FALSE
+  // this prevents counting the blinks every frame when eyes are closed
+  blinkJustHappened = eyesAreClosed && !eyesWereClosed;
+
+  eyesWereClosed = eyesAreClosed; // resetting the state for next frame
 }
 
 // ----------calculating the eye aspect ratio----------
@@ -433,11 +405,10 @@ function drawEyes() {
   let leftEyePoints = [
     133, 173, 157, 158, 159, 160, 161, 246, 33, 7, 163, 144, 145, 153, 154, 155,
   ];
-  // using a value-based for loop so that i is directly the value from the array
-  for (let i of leftEyePoints) {
-    vertex(keypoints[i].x, keypoints[i].y);
+  for (let i = 0; i < leftEyePoints.length; i++) {
+    let index = leftEyePoints[i];
+    vertex(keypoints[index].x, keypoints[index].y);
   }
-
   endShape(CLOSE);
 
   // draw right eye
@@ -446,8 +417,9 @@ function drawEyes() {
     362, 398, 384, 385, 386, 387, 388, 466, 263, 249, 390, 373, 374, 380, 381,
     382,
   ];
-  for (let i of rightEyePoints) {
-    vertex(keypoints[i].x, keypoints[i].y);
+  for (let i = 0; i < rightEyePoints.length; i++) {
+    let index = rightEyePoints[i];
+    vertex(keypoints[index].x, keypoints[index].y);
   }
   endShape(CLOSE);
 
@@ -499,8 +471,7 @@ function drawDonut(r1, r2, spacing, t, s, speed) {
 }
 
 // ---------function for the calculation of the super torus--------
-// x is the sin or cos function; n is the power to raise it to.
-// I referenced the YouTube tutorial (in README) for this
+// x is the sin or cos function; n is the power to raise it to (referenced the YouTube tutorial in README
 function xn(x, n) {
   let xn = Math.sign(x) * pow(abs(x), n);
   return xn;
