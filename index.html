@@ -1,231 +1,181 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex">
-    <title>Scarlett Wang</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hold my hand</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Courier New', monospace; }
+    #ui { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; z-index: 100; }
+    button {
+      background: transparent; border: 1px solid #444; color: #888;
+      padding: 6px 14px; font-family: 'Courier New', monospace; font-size: 11px;
+      cursor: pointer; letter-spacing: 2px; text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    button:hover { border-color: #fff; color: #fff; }
+    button:disabled { opacity: 0.3; cursor: not-allowed; }
+    #status {
+      position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+      color: #333; font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+      z-index: 100;
+    }
+    #debug {
+      position: fixed; top: 10px; right: 14px;
+      color: #333; font-size: 10px; letter-spacing: 1px; text-align: right;
+      z-index: 100; line-height: 1.6;
+    }
+    canvas { display: block; }
+    #log {
+      position: fixed; bottom: 30px; left: 10px;
+      width: 220px; max-height: 120px; overflow-y: auto;
+      background: rgba(0,0,0,0.8); border: 1px solid #222;
+      color: #0f0; font-size: 9px; letter-spacing: 1px;
+      padding: 6px; z-index: 200; line-height: 1.6;
+      font-family: 'Courier New', monospace;
+    }
+    #log div { border-bottom: 1px solid #111; }
+  </style>
+</head>
+<body>
+
+<div id="ui">
+  <button id="connectBtn">⬡ CONNECT SERIAL</button>
+  <button id="disconnectBtn" disabled>✕ DISCONNECT</button>
+</div>
+
+<div id="debug">
+  DIST: <span id="distVal">---</span> cm<br>
+  ZONE: <span id="zoneVal">---</span>
+</div>
+
+<div id="status">AWAITING SIGNAL</div>
+<div id="log"><div>— SERIAL LOG —</div></div>
+
+<script>
+  let port;
+  let reader;
+  let inputDone;
+  let readLoopActive = false;
+  let distanceCm = null;
+
+  const connectBtn    = document.getElementById('connectBtn');
+  const disconnectBtn = document.getElementById('disconnectBtn');
+  const statusEl      = document.getElementById('status');
+  const distValEl     = document.getElementById('distVal');
+  const zoneValEl     = document.getElementById('zoneVal');
+  const logEl         = document.getElementById('log');
+
+  function addLog(msg) {
+    const d = document.createElement('div');
+    d.textContent = msg;
+    logEl.appendChild(d);
+    logEl.scrollTop = logEl.scrollHeight;
+    // keep log short to prevent browser lag
+    while (logEl.children.length > 20) logEl.removeChild(logEl.children[1]);
+  }
+
+  // 1. Check if browser supports Web Serial
+  if (!("serial" in navigator)) {
+    statusEl.textContent = 'BROWSER NOT SUPPORTED';
+    addLog('ERR: Web Serial requires Chrome or Edge.');
+    connectBtn.disabled = true;
+  }
+
+  connectBtn.addEventListener('click', async () => {
+    try {
+      port = await navigator.serial.requestPort();
+      addLog('Port selected');
+      
+      await port.open({ baudRate: 9600 });
+      addLog('Port opened @ 9600');
+      
+      readLoopActive = true;
+      connectBtn.disabled = true;
+      disconnectBtn.disabled = false;
+      statusEl.textContent = 'CONNECTED — READING SENSOR';
+      
+      startReading();
+    } catch (e) {
+      statusEl.textContent = 'CONNECTION FAILED';
+      addLog('ERR: ' + e.message);
+    }
+  });
+
+  disconnectBtn.addEventListener('click', async () => {
+    readLoopActive = false;
+    connectBtn.disabled = false;
+    disconnectBtn.disabled = true;
+    statusEl.textContent = 'DISCONNECTING...';
+
+    try {
+      // 2. Safely close the stream and port to prevent hardware lockups
+      if (reader) {
+        await reader.cancel();
+        await inputDone.catch(() => {});
+        reader = null;
       }
-
-      body {
-        font-family: 'Inter', -apple-system, sans-serif;
-        background: #fafafa;
-        color: #1a1a1a;
-        line-height: 1.6;
-        padding: 80px 24px;
-        min-height: 100vh;
+      if (port) {
+        await port.close();
+        port = null;
       }
+      statusEl.textContent = 'DISCONNECTED';
+      distanceCm = null;
+      addLog('Disconnected safely');
+    } catch (e) {
+      statusEl.textContent = 'DISCONNECT ERROR';
+      addLog('ERR: ' + e.message);
+    }
+  });
 
-      main {
-        max-width: 600px;
-        margin: 0 auto;
+  async function startReading() {
+    const decoder = new TextDecoderStream();
+    inputDone = port.readable.pipeTo(decoder.writable);
+    reader = decoder.readable.getReader();
+    let buffer = '';
+    addLog('Read loop started');
+
+    try {
+      while (readLoopActive) {
+        const { value, done } = await reader.read();
+        if (done) { 
+          addLog('Stream done'); 
+          break; 
+        }
+
+        buffer += value;
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // keep incomplete tail
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+
+          // 3. Removed heavy DOM logging here to prevent browser freezing!
+          const d = parseFloat(trimmed);
+          if (!isNaN(d)) {
+            distanceCm = d;
+            distValEl.textContent = d.toFixed(1);
+          }
+        }
       }
-
-      header {
-        margin-bottom: 64px;
-        padding-bottom: 32px;
-        border-bottom: 1px solid #e0e0e0;
+    } catch(e) {
+      addLog('READ ERR: ' + e.message);
+      if (readLoopActive) statusEl.textContent = 'READ ERROR: ' + e.message;
+    } finally {
+      if (reader) {
+        reader.releaseLock();
       }
+    }
+  }
 
-      h1 {
-        font-family: 'Newsreader', Georgia, serif;
-        font-weight: 400;
-        font-size: 2rem;
-        letter-spacing: -0.02em;
-        margin-bottom: 8px;
-      }
+  // Expose to sketch.js
+  window.getDistance     = () => distanceCm;
+  window.updateZoneLabel = (z) => { zoneValEl.textContent = z; };
+</script>
 
-      .subtitle {
-        font-size: 0.875rem;
-        color: #666;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-      }
+<script src="sketch.js"></script>
 
-      section {
-        margin-bottom: 48px;
-      }
-
-      h2 {
-        font-size: 0.75rem;
-        font-weight: 500;
-        color: #999;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        margin-bottom: 20px;
-      }
-
-      ul {
-        list-style: none;
-      }
-
-      li {
-        padding: 12px 0;
-        border-bottom: 1px solid #eee;
-      }
-
-      li:last-child {
-        border-bottom: none;
-      }
-
-      a {
-        color: #1a1a1a;
-        text-decoration: none;
-        transition: color 0.2s ease;
-      }
-
-      a:hover {
-        color: #666;
-      }
-
-      /* Subtle number labels */
-      .num {
-        font-size: 0.75rem;
-        color: #bbb;
-        margin-right: 12px;
-        font-variant-numeric: tabular-nums;
-      }
-
-      /* Inline project with parts */
-      .project-inline {
-        display: flex;
-        align-items: baseline;
-      }
-
-      .project-inline .project-title {
-        margin-right: 8px;
-      }
-
-      .project-parts {
-        display: flex;
-        gap: 16px;
-      }
-
-      .project-parts li {
-        border: none;
-        padding: 0;
-      }
-
-      .project-parts a {
-        font-size: 0.875rem;
-        color: #999;
-        padding-bottom: 2px;
-        border-bottom: 1px solid transparent;
-      }
-
-      .project-parts a:hover {
-        color: #1a1a1a;
-        border-bottom-color: #1a1a1a;
-      }
-
-      /* Separator between title and parts */
-      .separator {
-        color: #ddd;
-        margin: 0 4px;
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <header>
-        <h1>Scarlett Wang</h1>
-        <p class="subtitle">N12677408</p>
-      </header>
-
-      <section>
-        <h2>Weekly Notes</h2>
-        <ul>
-          <li><span class="num">01</span><a href="./week1/">Week 1</a></li>
-          <li><span class="num">02</span><a href="./week2/">Week 2</a></li>
-          <li><span class="num">03</span><a href="./week3/">Week 3</a></li>
-          <li><span class="num">04</span><a href="./week4/">Week 4</a></li>
-          <li class="project-inline">
-            <span class="num">05</span>
-            <span class="project-title">Week 5</span>
-            <span class="separator"></span>
-            <ul class="project-parts">
-              <li><a href="./week5a/">A</a></li>
-              <li><a href="./week5b/">B</a></li>
-            </ul>
-          </li>
-          <li class="project-inline">
-            <span class="num">06</span>
-            <span class="project-title">Week 6</span>
-            <span class="separator"></span>
-            <ul class="project-parts">
-              <li><a href="./week6a/">A</a></li>
-              <li><a href="./week6b/">B</a></li>
-              <li><a href="./week6-lerp/">Lerp</a></li>
-            </ul>
-          </li>
-          <li><span class="num">07</span><a href="week7/">Week 7</a></li>
-          <li class="project-inline">
-            <span class="num">08</span>
-            <span class="project-title">Week 8</span>
-            <span class="separator"></span>
-            <ul class="project-parts">
-              <li><a href="./week8a/">A</a></li>
-              <li><a href="./week8_eyeball/">Eyeball</a></li>
-              <li><a href="./week8-lerp/">Lerp</a></li>
-              <li><a href="./week8_noise/">Noise</a></li>
-            </ul>
-          </li>
-          <li><span class="num">10</span><a href="./arduino-workshop-a/">Week 10</a></li>
-          <li class="project-inline">
-            <span class="num">11</span>
-            <span class="project-title">Week 11</span>
-            <span class="separator"></span>
-            <ul class="project-parts">
-              <li><a href="./week11-bodypose/">bodypose</a></li>
-              <li><a href="./week11-facemesh/">fashmesh</a></li>
-              <li><a href="./week11-handpose/">handpose</a></li>
-            </ul>
-          </li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>Assignments</h2>
-        <ul>
-          <li><span class="num">01</span><a href="./assignment1/">Geometric Abstraction</a></li>
-          <li><span class="num">02</span><a href="./assignment2/">Generative Pattern</a></li>
-          <li><span class="num">03</span><a href="./assignment3/">Abstract Clock</a></li>
-          <li><span class="num">04</span><a href="./assignment4/">Object Factory</a></li>
-          <li class="project-inline">
-            <span class="num">05</span>
-            <span class="project-title">Projection Mapping</span>
-            <span class="separator"></span>
-            <ul class="project-parts">
-              <li><a href="./assignment5-1/">Sketch 1</a></li>
-              <li><a href="./assignment5-2/">Sketch 2</a></li>
-              <li><a href="./assignment5-3/">Sketch 3</a></li>
-            </ul>
-          </li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>Final Project</h2>
-        <ul>
-          <li><span class="num">>></span><a href="./final/">What's Going On in Your Head?</a></li>
-          <li class="project-inline"><span class="num">>></span>
-            <span class="project-title">Process</span>
-            <span class="separator"></span>
-            <ul class="project-parts">
-              <li><a href="./final/final-part-1/">Part 1</a></li>
-              <li><a href="./final/final-part-2/">Part 2</a></li>
-            </ul>
-          </li>
-        </ul>
-      </section>
-    </main>
-  </body>
+</body>
 </html>
